@@ -48,18 +48,18 @@ type Controller struct {
 const controllerAgentName = "my-controller"
 
 const (
-	// SuccessSynced is used as part of the Event 'reason' when a Foo is synced
+	// SuccessSynced is used as part of the Event 'reason' when a Daemonstool is synced
 	SuccessSynced = "Synced"
-	// ErrResourceExists is used as part of the Event 'reason' when a Foo fails
+	// ErrResourceExists is used as part of the Event 'reason' when a Daemonstool fails
 	// to sync due to a Deployment of the same name already existing.
 	ErrResourceExists = "ErrResourceExists"
 
 	// MessageResourceExists is the message used for Events when a resource
 	// fails to sync due to a Deployment already existing
-	MessageResourceExists = "Resource %q already exists and is not managed by Foo"
-	// MessageResourceSynced is the message used for an Event fired when a Foo
+	MessageResourceExists = "Resource %q already exists and is not managed by Daemonstool"
+	// MessageResourceSynced is the message used for an Event fired when a Daemonstool
 	// is synced successfully
-	MessageResourceSynced = "Foo synced successfully"
+	MessageResourceSynced = "Daemonstool synced successfully"
 )
 
 // NewController returns a new sample controller
@@ -93,9 +93,9 @@ func NewController(
 	klog.Info("Setting up event handlers")
 	// Set up an event handler for when Daemonstool resources change
 	daemonstoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: controller.enqueueFoo,
+		AddFunc: controller.enqueueDaemonstool,
 		UpdateFunc: func(old, new interface{}) {
-			controller.enqueueFoo(new)
+			controller.enqueueDaemonstool(new)
 		},
 	})
 
@@ -139,7 +139,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	}
 
 	klog.Info("Starting workers")
-	// Launch two workers to process Foo resources
+	// Launch two workers to process Daemonstool resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
@@ -193,7 +193,7 @@ func (c *Controller) processNextWorkItem() bool {
 			return nil
 		}
 		// Run the syncHandler, passing it the namespace/name string of the
-		// Foo resource to be synced.
+		// Daemonstool resource to be synced.
 		if err := c.syncHandler(key); err != nil {
 			// Put the item back on the workqueue to handle any transient errors.
 			c.workqueue.AddRateLimited(key)
@@ -215,7 +215,7 @@ func (c *Controller) processNextWorkItem() bool {
 }
 
 // syncHandler compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Foo resource
+// converge the two. It then updates the Status block of the Daemonstool resource
 // with the current status of the resource.
 func (c *Controller) syncHandler(key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
@@ -247,7 +247,7 @@ func (c *Controller) syncHandler(key string) error {
 		return nil
 	}
 
-	// Get the deployment with the name specified in Foo.spec
+	// Get the deployment with the name specified in Daemonstool.spec
 	deployment, err := c.deploymentsLister.Deployments(daemonstool.Namespace).Get(deploymentName)
 	// If the resource doesn't exist, we'll create it
 	if errors.IsNotFound(err) {
@@ -272,9 +272,9 @@ func (c *Controller) syncHandler(key string) error {
 	// If this number of the replicas on the Daemonstool resource is specified, and the
 	// number does not equal the current desired replicas on the Deployment, we
 	// should update the Deployment resource.
-	/*if daemonstool.Spec.Replicas != nil && *foo.Spec.Replicas != *deployment.Spec.Replicas {
-		klog.V(4).Infof("Foo %s replicas: %d, deployment replicas: %d", name, *foo.Spec.Replicas, *deployment.Spec.Replicas)
-		deployment, err = c.kubeclientset.AppsV1().Deployments(foo.Namespace).Update(context.TODO(), newDeployment(foo), metav1.UpdateOptions{})
+	/*if daemonstool.Spec.Replicas != nil && *daemonstool.Spec.Replicas != *deployment.Spec.Replicas {
+		klog.V(4).Infof("Daemonstool %s replicas: %d, deployment replicas: %d", name, *daemonstool.Spec.Replicas, *deployment.Spec.Replicas)
+		deployment, err = c.kubeclientset.AppsV1().Deployments(daemonstool.Namespace).Update(context.TODO(), newDeployment(daemonstool), metav1.UpdateOptions{})
 	}*/
 
 	// If an error occurs during Update, we'll requeue the item so we can
@@ -284,7 +284,7 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	// Finally, we update the status block of the Foo resource to reflect the
+	// Finally, we update the status block of the Daemonstool resource to reflect the
 	// current state of the world
 	err = c.updateDaemonstoolStatus(daemonstool, deployment)
 	if err != nil {
@@ -304,17 +304,17 @@ func (c *Controller) updateDaemonstoolStatus(daemonstool *daemonstoolv1beta1.Dae
 	daemonstoolCopy.Status.Installed = 1
 	//.AvailableReplicas = deployment.Status.AvailableReplicas
 	// If the CustomResourceSubresources feature gate is not enabled,
-	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
+	// we must use Update instead of UpdateStatus to update the Status block of the Daemonstool resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
 	_, err := c.sampleclientset.UalterV1beta1().Daemonstools(daemonstool.Namespace).Update(context.TODO(), daemonstoolCopy, metav1.UpdateOptions{})
 	return err
 }
 
-// enqueueFoo takes a Daemonstool resource and converts it into a namespace/name
+// enqueueDaemonstool takes a Daemonstool resource and converts it into a namespace/name
 // string which is then put onto the work queue. This method should *not* be
 // passed resources of any type other than Daemonstool.
-func (c *Controller) enqueueFoo(obj interface{}) {
+func (c *Controller) enqueueDaemonstool(obj interface{}) {
 	var key string
 	var err error
 	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
@@ -353,20 +353,20 @@ func (c *Controller) handleObject(obj interface{}) {
 			return
 		}
 
-		foo, err := c.daemonstoolLister.Daemonstools(object.GetNamespace()).Get(ownerRef.Name)
+		daemonstool, err := c.daemonstoolLister.Daemonstools(object.GetNamespace()).Get(ownerRef.Name)
 		if err != nil {
-			klog.V(4).Infof("ignoring orphaned object '%s' of foo '%s'", object.GetSelfLink(), ownerRef.Name)
+			klog.V(4).Infof("ignoring orphaned object '%s' of daemonstool '%s'", object.GetSelfLink(), ownerRef.Name)
 			return
 		}
 
-		c.enqueueFoo(foo)
+		c.enqueueDaemonstool(daemonstool)
 		return
 	}
 }
 
 // newDeployment creates a new Deployment for a Daemonstool resource. It also sets
 // the appropriate OwnerReferences on the resource so handleObject can discover
-// the Foo resource that 'owns' it.
+// the Daemonstool resource that 'owns' it.
 func newDeployment(daemonstool *daemonstoolv1beta1.Daemonstool) *appsv1.Deployment {
 	labels := map[string]string{
 		"app":        "nginx",
