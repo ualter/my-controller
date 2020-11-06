@@ -1,4 +1,6 @@
-A simple Kubernetes Operator/Controller with Golang
+**Kubernetes Operator/Controller in Golang**
+---
+A simple k8s operator
 
 ```bash
 # BUILD & RUN
