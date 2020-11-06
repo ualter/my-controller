@@ -47,6 +47,7 @@ type Controller struct {
 
 const controllerAgentName = "my-controller"
 
+//
 const (
 	// SuccessSynced is used as part of the Event 'reason' when a Daemonstool is synced
 	SuccessSynced = "Synced"
