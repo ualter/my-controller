@@ -35,8 +35,8 @@ import (
 type Controller struct {
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
-	// sampleclientset is a clientset for our own API group
-	sampleclientset   clientset.Interface
+	// myapiclientset is a clientset for our own API group
+	myapiclientset    clientset.Interface
 	deploymentsLister appslisters.DeploymentLister
 	deploymentsSynced cache.InformerSynced
 	daemonstoolLister listers.DaemonstoolLister
@@ -66,7 +66,7 @@ const (
 // NewController returns a new sample controller
 func NewController(
 	kubeclientset kubernetes.Interface,
-	sampleclientset clientset.Interface,
+	myapiclientset clientset.Interface,
 	deploymentInformer appsinformers.DeploymentInformer,
 	daemonstoolInformer informers.DaemonstoolInformer) *Controller {
 
@@ -82,7 +82,7 @@ func NewController(
 
 	controller := &Controller{
 		kubeclientset:     kubeclientset,
-		sampleclientset:   sampleclientset,
+		myapiclientset:    myapiclientset,
 		deploymentsLister: deploymentInformer.Lister(),
 		deploymentsSynced: deploymentInformer.Informer().HasSynced,
 		daemonstoolLister: daemonstoolInformer.Lister(),
@@ -308,7 +308,7 @@ func (c *Controller) updateDaemonstoolStatus(daemonstool *daemonstoolv1beta1.Dae
 	// we must use Update instead of UpdateStatus to update the Status block of the Daemonstool resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.UalterV1beta1().Daemonstools(daemonstool.Namespace).Update(context.TODO(), daemonstoolCopy, metav1.UpdateOptions{})
+	_, err := c.myapiclientset.UalterV1beta1().Daemonstools(daemonstool.Namespace).Update(context.TODO(), daemonstoolCopy, metav1.UpdateOptions{})
 	return err
 }
 
