@@ -1,0 +1,8 @@
+apiVersion: ualter.com/v1beta1
+kind: Daemonstool
+metadata:
+  name: mytools
+spec:
+  label: forwhomthebelltools
+  image: busybox
+  key: whatsover
